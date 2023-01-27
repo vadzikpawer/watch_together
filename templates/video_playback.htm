@@ -62,13 +62,11 @@
     <h1> Hello in room {{id}}</h1>
     <div class="wrapper">
         <video type="video/mp4" controls class="video_box">
-            <source
-                src='/video/{{id}}''>
+            <source src='{{link}}''>
         </video>
 
         <button id="play">Play/Pause</button>
     </div>
-
 
 
 </body>
@@ -83,30 +81,14 @@
         }
     };
 
-    document.getElementById('play').addEventListener('click', sendMessage);
-
-    function control() {
-        if (document.querySelector('video').paused) {
-            document.querySelector('video').play();
-        }
-        else {
+    document.getElementById(' play').addEventListener('click', sendMessage); function control() {
+        if
+            (document.querySelector('video').paused) { document.querySelector('video').play(); } else {
             document.querySelector('video').pause();
         }
-    }
-
-    url = location.pathname.split('/');
-    var ws_url = '';
-
-    console.log(url);
-
-    var ws = new WebSocket(`ws://localhost:8000/room/${url[2]}/controls`);
-    ws.onmessage = function (event) {
-        control()
-    };
-    function sendMessage(event) {
-        ws.send('control')
-    }
-
+    } url = location.pathname.split('/'); var ws_url = '';
+    console.log(url); var ws = new WebSocket(`ws://localhost:8000/room/${url[2]}/controls`);
+    ws.onmessage = function (event) { control() }; function sendMessage(event) { ws.send('control') }
 </script>
 
 

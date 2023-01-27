@@ -1,6 +1,6 @@
 from os import listdir
 from os.path import isfile, join
-from typing import List
+from typing import List, Union
 
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse, FileResponse
 from pathlib import Path
@@ -52,7 +52,6 @@ async def favicon():
 
 @app.get("/video/{id}")
 async def video_endpoint(id, range: str = Header(None)):
-    print(id)
     video_path = Path("temp/" + id)
     if range:
         start, end = range.replace("bytes=", "").split("-")
@@ -86,19 +85,22 @@ async def enter_room(id:str):
 @app.post("/room/{id}", response_class=HTMLResponse)
 async def join_room(request: Request,id:str):
     if 'film' in rooms[id].keys():
-        return templates.TemplateResponse("video_playback.htm", context={"request": request, "id": rooms[id]['film']})
+        return templates.TemplateResponse("video_playback.htm", context={"request": request, "link": rooms[id]['film']})
     return templates.TemplateResponse("room.htm", context={"request": request, "id": id})   #TODO return list of videos on server
 
 @app.get("/room/{id}/{film_id}", response_class=HTMLResponse)
-async def join_room(request: Request,id:str, film_id):
+async def join_room(request: Request,id:str, film_id, url: Union[str, None] = None):
+    if url:
+        url = url.replace('watch', 'embed')
+        film_id = url
+    else:
+        film_id = '/video/' + film_id
     if id not in rooms.keys():
         rooms[id] = {}
         rooms[id]['users'] = []
-    if 'film' not in rooms[id].keys():
-        rooms[id]['film'] = film_id
-        rooms[id]['state'] = 'stopped'
-    print(rooms)
-    return templates.TemplateResponse("video_playback.htm", context={"request": request, "id": rooms[id]['film']})   #TODO return list of videos on server
+    rooms[id]['film'] = film_id
+    rooms[id]['state'] = 'stopped'
+    return templates.TemplateResponse("video_playback.htm", context={"request": request, "link": rooms[id]['film']})   #TODO return list of videos on server
 
 
 @app.get("/films")
@@ -111,7 +113,6 @@ async def get_all_films():
 @app.websocket("/room/{id}/controls")
 async def control_playback(websocket: WebSocket, id:str):
     await manager.connect(websocket, id)
-    print(rooms)
     try:
         while True:
             data = await websocket.receive_text()

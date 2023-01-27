@@ -15,6 +15,16 @@
     <h1> Hello in room {{id}}</h1>
     <ul id="films_list"></ul>
 
+    <form name="user_form" method="get">
+        <div>
+            <label>Paste a link</label>
+            <input id="url" name="url">
+        </div>
+        <div>
+            <input id="login" type="submit" value="Enter room" onclick="return film_link()" class="login">
+        </div>
+    </form>
+
 </body>
 
 
@@ -41,6 +51,10 @@
 
     function Alert(listItem) {
         location.href = location.pathname + '/' + listItem.firstChild.textContent;
+    }
+
+    function film_link() {
+        document.user_form.action = location.pathname + '/url';
     }
 </script>
 
