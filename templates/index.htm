@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<style>
+    form label {
+        display: inline-block;
+        width: 100px;
+      }
+      
+      form div {
+        margin-bottom: 10px;
+      }
+
+      .login {
+        width: fit-content;
+        height: auto;
+        padding: 15px 25px;
+        font-size: 24px;
+        cursor: pointer;
+        text-align: center;
+        text-decoration: none;
+        outline: none;
+        color: #fff;
+        background-color: #4CAF50;
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 9px #999;
+    }
+
+    .login:hover {
+        background-color: #3e8e41
+    }
+
+    .login:active {
+        background-color: #3e8e41;
+        box-shadow: 0 5px #666;
+        transform: translateY(4px);
+    }
+
+</style>
+<head>
+    <title>FastAPI video streaming</title>
+</head>
+
+<body>
+    <form name="user_form" method="post">
+        <div>
+            <label>Room number</label>
+            <input id="room_num" name="room_num">
+        </div>
+        <div>
+            <input id="login" type="submit" value="Enter room" onclick="return enter_room()" class="login">
+        </div>
+    </form>
+</body>
+
+
+<script type="text/javascript">
+    function enter_room() {
+        document.user_form.action = 'enter_room/' + document.getElementById('room_num').value;
+    }
+</script>
+
+</html>

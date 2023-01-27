@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<style>
+    .film:hover {
+        cursor: pointer;
+    }
+</style>
+
+<head>
+    <title>FastAPI video streaming</title>
+</head>
+
+<body>
+    <h1> Hello in room {{id}}</h1>
+    <ul id="films_list"></ul>
+
+</body>
+
+
+<script>
+    const myList = document.querySelector('ul');
+    const myRequest = new Request('/films');
+
+    fetch(myRequest)
+        .then((response) => response.json())
+        .then((data) => {
+            for (const film of data.films) {
+                const listItem = document.createElement('li');
+                listItem.setAttribute('onclick', 'Alert(this)')
+                listItem.setAttribute('class', 'film')
+                listItem.appendChild(
+                    document.createElement('strong')
+                ).textContent = film;
+                myList.appendChild(listItem);
+            }
+        })
+        .catch(console.error);
+
+    console.log(myList);
+
+    function Alert(listItem) {
+        location.href = location.pathname + '/' + listItem.firstChild.textContent;
+    }
+</script>
+
+
+
+</html>
