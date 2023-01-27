@@ -54,22 +54,26 @@
 
 <head>
     <title>FastAPI video streaming</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link href="https://vjs.zencdn.net/7.21.1/video-js.css" rel="stylesheet" />
 </head>
 
 <body>
     <h1> Hello in room {{id}}</h1>
     <div class="wrapper">
         <video type="video/mp4" controls class="video_box">
-            <source src="/video/{{id}}">
+            <source
+                src='/video/{{id}}''>
         </video>
 
         <button id="play">Play/Pause</button>
     </div>
 
 
+
 </body>
 
-
+<script src="https://vjs.zencdn.net/7.21.1/video.min.js"></script>
 <script>
 
     document.onkeydown = function (evt) {
@@ -92,7 +96,7 @@
 
     url = location.pathname.split('/');
     var ws_url = '';
-    
+
     console.log(url);
 
     var ws = new WebSocket(`ws://localhost:8000/room/${url[2]}/controls`);
