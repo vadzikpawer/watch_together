@@ -33,9 +33,10 @@ class ConnectionManager:
         self.active_connections.remove(websocket)
         rooms[room_id]['users'].remove(websocket)
 
-    async def broadcast(self, message: str, room_id: str):
+    async def broadcast(self, websocket, message: str, room_id: str):
         for connection in rooms[room_id]['users']:
-            await connection.send_text(message)
+            if connection != websocket:
+                await connection.send_text(message)
 
 
 manager = ConnectionManager()
@@ -52,17 +53,21 @@ async def favicon():
 
 @app.get("/video/{id}")
 async def video_endpoint(id, range: str = Header(None)):
+    print('video endpoint')
     video_path = Path("temp/" + id)
     if range:
         start, end = range.replace("bytes=", "").split("-")
         start = int(start)
         end = int(end) if end else start + CHUNK_SIZE
+        print('video endpoint end 1')
     else:
         start = 0
         end = start + CHUNK_SIZE
+        print('video endpoint end 2')
     with open(video_path, "rb") as video:
-        filesize = str(len(video.read()))
+        filesize = str(video_path.stat().st_size)
         video.seek(start)
+        print('video endpoint end 3')
         data = video.read(end - start)
         if end - start > len(data):
             end = int(filesize)-1
@@ -70,6 +75,7 @@ async def video_endpoint(id, range: str = Header(None)):
             'Content-Range': f'bytes {str(start)}-{str(end)}/{filesize}',
             'Accept-Ranges': 'bytes'
         }
+        print('video endpoint end')
         return Response(data, status_code=206, headers=headers, media_type="video/mp4")
 
 
@@ -107,8 +113,7 @@ async def join_room(request: Request,id:str, film_id, url: Union[str, None] = No
 async def get_all_films():
     films_list = {}
     films_list['films'] = [f for f in listdir('temp') if isfile(join('temp', f))]
-    return JSONResponse(content=films_list)                                                             #pick video from list and play it  
-                                                                                            #create ws remote control
+    return JSONResponse(content=films_list)                                                             
 
 @app.websocket("/room/{id}/controls")
 async def control_playback(websocket: WebSocket, id:str):
@@ -116,7 +121,7 @@ async def control_playback(websocket: WebSocket, id:str):
     try:
         while True:
             data = await websocket.receive_text()
-            await manager.broadcast('control', id)
+            await manager.broadcast(websocket, data, id)
     except WebSocketDisconnect:
         manager.disconnect(websocket, id)
         

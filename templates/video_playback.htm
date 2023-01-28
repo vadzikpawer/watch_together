@@ -55,40 +55,58 @@
 <head>
     <title>FastAPI video streaming</title>
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
-    <link href="https://vjs.zencdn.net/7.21.1/video-js.css" rel="stylesheet" />
 </head>
 
 <body>
-    <h1> Hello in room {{id}}</h1>
+    <h1> Hello in room {{link}}</h1>
     <div class="wrapper">
-        <video type="video/mp4" controls class="video_box">
+        <video id='video' type="video/mp4" controls class="video_box">
             <source src='{{link}}''>
         </video>
 
-        <button id="play">Play/Pause</button>
+        <!-- <button id="play">Play/Pause</button> -->
     </div>
 
 
 </body>
-
-<script src="https://vjs.zencdn.net/7.21.1/video.min.js"></script>
 <script>
 
     document.onkeydown = function (evt) {
         evt = evt || window.event;
         if (evt.code == "Space") {
-            sendMessage(event)
+            sendMessage()
         }
     };
 
-    document.getElementById(' play').addEventListener('click', sendMessage); function control() {
-        if
-            (document.querySelector('video').paused) { document.querySelector('video').play(); } else {
+    var state = 'pause';
+
+    const video = document.getElementById('video'); video.addEventListener('loadeddata', function () {}, false); 
+    
+    video.addEventListener('playing', (event) => {
+        sendMessage(event, 'play');
+    });
+
+    video.addEventListener('pause', (event) => {sendMessage(event, 'pause')
+});
+
+    // document.getElementById('play').addEventListener('click', sendMessage);
+    function control() {
+        if (document.querySelector('video').paused) { 
+                document.querySelector('video').play(); } 
+            else {
             document.querySelector('video').pause();
         }
-    } url = location.pathname.split('/'); var ws_url = '';
-    console.log(url); var ws = new WebSocket(`ws://localhost:8000/room/${url[2]}/controls`);
-    ws.onmessage = function (event) { control() }; function sendMessage(event) { ws.send('control') }
+    }; 
+    
+    url = location.pathname.split('/'); var ws_url = '';
+    console.log(url); var ws = new WebSocket(`ws://45.156.24.134:8000/room/${url[2]}/controls`);
+    ws.onmessage = function (event) { console.log(event.data);
+        state = event.data
+        control(); 
+
+    };
+    function sendMessage(event, text) { ws.send(text);
+    event.preventDefault(); }
 </script>
 
 
