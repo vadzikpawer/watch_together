@@ -10,14 +10,15 @@ from fastapi import Header
 from fastapi.templating import Jinja2Templates
 
 CHUNK_SIZE = 1024*1024
-
-
+SERVER = '45.156.24.134'
+LOCAL = 'localhost'
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 video_path = Path("temp/video.mp4")
 rooms = {}
 favicon_path = 'favicon.ico'
+
 
 
 class ConnectionManager:
@@ -53,21 +54,17 @@ async def favicon():
 
 @app.get("/video/{id}")
 async def video_endpoint(id, range: str = Header(None)):
-    print('video endpoint')
     video_path = Path("temp/" + id)
     if range:
         start, end = range.replace("bytes=", "").split("-")
         start = int(start)
         end = int(end) if end else start + CHUNK_SIZE
-        print('video endpoint end 1')
     else:
         start = 0
         end = start + CHUNK_SIZE
-        print('video endpoint end 2')
     with open(video_path, "rb") as video:
         filesize = str(video_path.stat().st_size)
         video.seek(start)
-        print('video endpoint end 3')
         data = video.read(end - start)
         if end - start > len(data):
             end = int(filesize)-1
@@ -75,11 +72,10 @@ async def video_endpoint(id, range: str = Header(None)):
             'Content-Range': f'bytes {str(start)}-{str(end)}/{filesize}',
             'Accept-Ranges': 'bytes'
         }
-        print('video endpoint end')
         return Response(data, status_code=206, headers=headers, media_type="video/mp4")
 
 
-@app.post("/enter_room/{id}")
+@app.get("/enter_room/{id}")
 async def enter_room(id:str):
     if id not in rooms.keys():
         rooms[id] = {}
@@ -88,11 +84,15 @@ async def enter_room(id:str):
     return response
 
 
-@app.post("/room/{id}", response_class=HTMLResponse)
-async def join_room(request: Request,id:str):
-    if 'film' in rooms[id].keys():
-        return templates.TemplateResponse("video_playback.htm", context={"request": request, "link": rooms[id]['film']})
-    return templates.TemplateResponse("room.htm", context={"request": request, "id": id})   #TODO return list of videos on server
+@app.get("/room/{id}", response_class=HTMLResponse)
+async def join_room(request: Request,id:str, new: Union[str, None] = None):
+    if id not in rooms.keys():
+        rooms[id] = {}
+        rooms[id]['users'] = []
+        rooms[id]['state'] = 'pause'
+    if 'film' in rooms[id].keys() and not new:
+        return templates.TemplateResponse("video_playback.htm", context={"request": request, "link": rooms[id]['film'], "server": SERVER, 'time': rooms[id]['time']}) 
+    return templates.TemplateResponse("room.htm", context={"request": request, "id": id})   
 
 @app.get("/room/{id}/{film_id}", response_class=HTMLResponse)
 async def join_room(request: Request,id:str, film_id, url: Union[str, None] = None):
@@ -104,16 +104,31 @@ async def join_room(request: Request,id:str, film_id, url: Union[str, None] = No
     if id not in rooms.keys():
         rooms[id] = {}
         rooms[id]['users'] = []
+        rooms[id]['state'] = 'pause'
+    if 'time' not in rooms[id]:
+        rooms[id]['time'] = 0
     rooms[id]['film'] = film_id
-    rooms[id]['state'] = 'stopped'
-    return templates.TemplateResponse("video_playback.htm", context={"request": request, "link": rooms[id]['film']})   #TODO return list of videos on server
+
+    return templates.TemplateResponse("video_playback.htm", context={"request": request, "link": rooms[id]['film'], "server": SERVER, 'time': rooms[id]['time']})   
 
 
 @app.get("/films")
 async def get_all_films():
     films_list = {}
     films_list['films'] = [f for f in listdir('temp') if isfile(join('temp', f))]
-    return JSONResponse(content=films_list)                                                             
+    return JSONResponse(content=films_list)
+
+@app.get("/rooms")
+async def get_all_rooms():
+    rooms_list = {}
+    rooms_list['rooms'] = [x for x in rooms.keys()]
+    return JSONResponse(content=rooms_list)
+
+@app.get('/removerooms')
+async def remove_rooms():
+    rooms.clear()
+    response = RedirectResponse(url=f'/')
+    return response                                                   
 
 @app.websocket("/room/{id}/controls")
 async def control_playback(websocket: WebSocket, id:str):
@@ -121,6 +136,8 @@ async def control_playback(websocket: WebSocket, id:str):
     try:
         while True:
             data = await websocket.receive_text()
+            if 'seek' in data:
+                rooms[id]['time'] = data.split(' ')[1]
             await manager.broadcast(websocket, data, id)
     except WebSocketDisconnect:
         manager.disconnect(websocket, id)

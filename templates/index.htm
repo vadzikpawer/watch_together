@@ -4,13 +4,13 @@
     form label {
         display: inline-block;
         width: 100px;
-      }
-      
-      form div {
-        margin-bottom: 10px;
-      }
+    }
 
-      .login {
+    form div {
+        margin-bottom: 10px;
+    }
+
+    .login {
         width: fit-content;
         height: auto;
         padding: 15px 25px;
@@ -36,14 +36,18 @@
         transform: translateY(4px);
     }
 
+    .room:hover {
+        cursor: pointer;
+    }
 </style>
+
 <head>
     <title>FastAPI video streaming</title>
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
 </head>
 
 <body>
-    <form name="user_form" method="post">
+    <form name="user_form" method="get">
         <div>
             <label>Room number</label>
             <input id="room_num" name="room_num">
@@ -52,6 +56,9 @@
             <input id="login" type="submit" value="Enter room" onclick="return enter_room()" class="login">
         </div>
     </form>
+
+    <ul id="rooms_list"></ul>
+
 </body>
 
 
@@ -59,6 +66,29 @@
     function enter_room() {
         document.user_form.action = 'enter_room/' + document.getElementById('room_num').value;
     }
+
+    function enter_room_num(num) {
+        location.href = 'enter_room/' + num.firstChild.textContent;
+    };
+
+
+    const myList = document.querySelector('ul');
+    const myRequest = new Request('/rooms');
+
+    fetch(myRequest)
+        .then((response) => response.json())
+        .then((data) => {
+            for (const film of data.rooms) {
+                const listItem = document.createElement('li');
+                listItem.setAttribute('onclick', 'enter_room_num(this)')
+                listItem.setAttribute('class', 'room')
+                listItem.appendChild(
+                    document.createElement('strong')
+                ).textContent = film;
+                myList.appendChild(listItem);
+            }
+        })
+        .catch(console.error);
 </script>
 
 </html>

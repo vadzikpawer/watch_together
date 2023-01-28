@@ -64,53 +64,75 @@
             <source src='{{link}}''>
         </video>
 
-        <!-- <button id="play">Play/Pause</button> -->
+        <button id="back" onclick="returnBack()">Back</button>
     </div>
 
 
 </body>
 <script>
 
-    document.onkeydown = function (evt) {
-        evt = evt || window.event;
-        if (evt.code == "Space") {
-            sendMessage()
-        }
-    };
 
-    var state = 'pause';
 
-    const video = document.getElementById('video'); video.addEventListener('loadeddata', function () {}, false); 
-    
-    video.addEventListener('playing', (event) => {
+    var state = ' pause'; const video = document.getElementById('video'); video.addEventListener('loadeddata', function
+        () {
+            video.currentTime = '{{time}}';
+    }, false);
+    video.addEventListener(' playing', (event) => {
         console.log()
         if (state != 'play') {
-        sendMessage(event, 'play');
-}});
+            sendMessage(event, 'state: play');
+        }
+    });
 
     video.addEventListener('pause', (event) => {
-        if (state != 'pause') {sendMessage(event, 'pause')}
-});
+        if (state != 'pause') { sendMessage(event, 'state: pause') }
+    });
 
     // document.getElementById('play').addEventListener('click', sendMessage);
     function control() {
-        if (document.querySelector('video').paused) { 
-                document.querySelector('video').play(); } 
-            else {
+        if (document.querySelector('video').paused) {
+            document.querySelector('video').play();
+        }
+        else {
             document.querySelector('video').pause();
         }
-    }; 
-    
-    url = location.pathname.split('/'); var ws_url = '';
-    console.log(url); var ws = new WebSocket(`ws://45.156.24.134:8000/room/${url[2]}/controls`);
-    ws.onmessage = function (event) { console.log(event.data);
-        state = event.data;
-        control(); 
     };
-    function sendMessage(event, text) { 
-    state = text;
+
+
+    video.onseeked = (event) => {
+        sendMessage(event, 'seek: ' + event.target.currentTime);
+    };
+
+
+    // WebSocket part
+
+    var url = location.pathname.split('/');
+    console.log(url); var ws = new WebSocket(`ws://{{server}}:8000/room/${url[2]}/controls`);
+    ws.onmessage = function (event) {
+        if (event.data.includes('state: ')) {
+            state = event.data.split(' ')[1];
+            control();
+        }
+        else if (event.data.includes('seek: ')) {
+            video.onseeked = null
+            video.currentTime = event.data.split(' ')[1];
+            video.onseeked = (event) => {
+                sendMessage('seek: ' + event.target.currentTime);
+            };
+        }
+
+    };
+    function sendMessage(event, text) {
+        state = text;
         ws.send(text);
-    event.preventDefault(); }
+    }
+
+
+    function returnBack(){
+        location.href = `/${url[1]}/${url}`
+    }
+
+
 </script>
 
 
