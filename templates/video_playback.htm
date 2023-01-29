@@ -71,18 +71,20 @@
 </body>
 <script>
 
+    var needSeek = true;
 
-
-    var state = ' pause'; const video = document.getElementById('video'); video.addEventListener('loadeddata', function
-        () {
-            video.currentTime = '{{time}}';
+    var state = ' pause'; const video = document.getElementById('video'); video.addEventListener('loadeddata', () => {
+        video.currentTime = '{{time}}';
+        needSeek = false;
     }, false);
-    video.addEventListener(' playing', (event) => {
-        console.log()
-        if (state != 'play') {
-            sendMessage(event, 'state: play');
-        }
-    });
+
+    video.addEventListener('playing',
+        (event) => {
+            console.log()
+            if (state != 'play') {
+                sendMessage(event, 'state: play');
+            }
+        });
 
     video.addEventListener('pause', (event) => {
         if (state != 'pause') { sendMessage(event, 'state: pause') }
@@ -99,9 +101,15 @@
     };
 
 
-    video.onseeked = (event) => {
-        sendMessage(event, 'seek: ' + event.target.currentTime);
-    };
+    video.addEventListener('seeked', seek);
+
+    function seek(event) {
+        console.log(event)
+        if (needSeek) {
+            sendMessage(event, 'seek: ' + event.target.currentTime);
+        }
+        needSeek = true;
+    }
 
 
     // WebSocket part
@@ -114,11 +122,8 @@
             control();
         }
         else if (event.data.includes('seek: ')) {
-            video.onseeked = null
+            needSeek = false;
             video.currentTime = event.data.split(' ')[1];
-            video.onseeked = (event) => {
-                sendMessage('seek: ' + event.target.currentTime);
-            };
         }
 
     };
@@ -128,8 +133,8 @@
     }
 
 
-    function returnBack(){
-        location.href = `/${url[1]}/${url}`
+    function returnBack() {
+        location.href = `/${url[1]}/${url[2]}?new=1`
     }
 
 
