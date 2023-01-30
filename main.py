@@ -94,26 +94,8 @@ async def join_room(request: Request,id:str):
         rooms[id]['users'] = []
         rooms[id]['state'] = 'pause'
         rooms[id]['film'] = ''
-        rooms[id]['time'] = 0
+        rooms[id]['time'] = '0'
     return templates.TemplateResponse("room.htm", context={"request": request, "id": id, 'link': '/video/' + rooms[id]['film'], 'time': rooms[id]['time'], 'server': SERVER})   
-
-@app.get("/room/{id}/{film_id}", response_class=HTMLResponse)
-async def join_room(request: Request,id:str, film_id, url: Union[str, None] = None):
-    if url:
-        url = url.replace('watch', 'embed')
-        film_id = url
-    else:
-        film_id = '/video/' + film_id
-    if id not in rooms.keys():
-        rooms[id] = {}
-        rooms[id]['users'] = []
-        rooms[id]['state'] = 'pause'
-    if 'time' not in rooms[id]:
-        rooms[id]['time'] = 0
-    rooms[id]['film'] = film_id
-
-    return templates.TemplateResponse("video_playback.htm", context={"request": request, "link": rooms[id]['film'], "server": LOCAL, 'time': rooms[id]['time']})   
-
 
 @app.get("/films")
 async def get_all_films():
@@ -143,6 +125,7 @@ async def control_playback(websocket: WebSocket, id:str):
                 rooms[id]['time'] = data.split(' ')[1]
             if 'film' in data:
                 rooms[id]['film'] = data.split(' ')[1]
+                rooms[id]['time'] = '0'
             await manager.broadcast(websocket, data, id)
     except WebSocketDisconnect:
         manager.disconnect(websocket, id)
