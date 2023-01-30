@@ -4,16 +4,39 @@
     .film:hover {
         cursor: pointer;
     }
+
+    .grid-container {
+  display: grid;
+  column-gap: 50px;
+  grid-template-columns: 1fr 1fr;
+}
+
+.grid-item list-grid{
+    grid-column: 2;
+}
+
 </style>
 
 <head>
     <title>FastAPI video streaming</title>
-    <link rel="icon"  type="image/x-icon"  href="/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
 </head>
 
 <body>
     <h1> Hello in room {{id}}</h1>
-    <ul id="films_list"></ul>
+
+    <div class="grid-container">
+        <div class="grid-item" id="video_grid">
+            <video id='video' type="video/mp4" controls class="video_box" src="{{link}}">
+            </video>
+        </div>
+        <div class="grid-item" id="list_grid">
+            <h3>Films list:</h3>
+            <ul id="films_list"></ul>
+        </div>
+
+    </div>
+
 
     <form name="user_form" method="get">
         <div>
@@ -29,15 +52,83 @@
 
 
 <script>
-    const myList = document.querySelector('ul');
-    const myRequest = new Request('/films');
 
-    fetch(myRequest)
+    var needSeek = true;
+
+    var state = ' pause'; const video = document.getElementById('video'); video.addEventListener('loadeddata', () => {
+        video.currentTime = '{{time}}';
+        needSeek = false;
+    }, false);
+
+    video.addEventListener('playing',
+        (event) => {
+            console.log()
+            if (state != 'play') {
+                sendMessage(event, 'state: play');
+            }
+        });
+
+    video.addEventListener('pause', (event) => {
+        if (state != 'pause') { sendMessage(event, 'state: pause') }
+    });
+
+    // document.getElementById('play').addEventListener('click', sendMessage);
+    function control() {
+        if (document.querySelector('video').paused) {
+            document.querySelector('video').play();
+        }
+        else {
+            document.querySelector('video').pause();
+        }
+    };
+
+
+    video.addEventListener('seeked', seek);
+
+    function seek(event) {
+        console.log(event)
+        if (needSeek) {
+            sendMessage(event, 'seek: ' + event.target.currentTime);
+        }
+        needSeek = true;
+    }
+
+
+    // WebSocket part
+
+    var url = location.pathname.split('/');
+    console.log(url); var ws = new WebSocket(`ws://{{server}}:8000/room/${url[2]}/controls`);
+    ws.onmessage = function (event) {
+        if (event.data.includes('state: ')) {
+            state = event.data.split(' ')[1];
+            control();
+        }
+        else if (event.data.includes('seek: ')) {
+            needSeek = false;
+            video.currentTime = event.data.split(' ')[1];
+        }
+        else if (event.data.includes('film: ')) {
+            video.setAttribute('src', "/video/" + event.data.split(' ')[1]);
+        }
+    };
+    function sendMessage(event, text) {
+        if (text.includes('state')) {
+            state = text;
+        }
+        ws.send(text);
+    }
+
+
+    function returnBack() {
+        location.href = `/${url[1]}/${url[2]}?new=1`
+    }
+
+    const myList = document.querySelector(' ul'); const myRequest = new Request('/films'); fetch(myRequest)
         .then((response) => response.json())
         .then((data) => {
             for (const film of data.films) {
                 const listItem = document.createElement('li');
-                listItem.setAttribute('onclick', 'Alert(this)')
+                listItem.setAttribute('onclick', 'Alert(this.firstChild.textContent)')
                 listItem.setAttribute('class', 'film')
                 listItem.appendChild(
                     document.createElement('strong')
@@ -49,8 +140,9 @@
 
     console.log(myList);
 
-    function Alert(listItem) {
-        location.href = location.pathname + '/' + listItem.firstChild.textContent;
+    function Alert(film) {
+        video.setAttribute('src', '/video/' + film);
+        sendMessage(event, 'film: ' + film)
     }
 
     function film_link() {

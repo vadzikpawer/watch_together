@@ -80,19 +80,22 @@ async def enter_room(id:str):
     if id not in rooms.keys():
         rooms[id] = {}
         rooms[id]['users'] = []
+        rooms[id]['state'] = 'pause'
+        rooms[id]['film'] = ''
+        rooms[id]['time'] = 0
     response = RedirectResponse(url=f'/room/{id}')
     return response
 
 
 @app.get("/room/{id}", response_class=HTMLResponse)
-async def join_room(request: Request,id:str, new: Union[str, None] = None):
+async def join_room(request: Request,id:str):
     if id not in rooms.keys():
         rooms[id] = {}
         rooms[id]['users'] = []
         rooms[id]['state'] = 'pause'
-    if 'film' in rooms[id].keys() and not new:
-        return templates.TemplateResponse("video_playback.htm", context={"request": request, "link": rooms[id]['film'], "server": SERVER, 'time': rooms[id]['time']}) 
-    return templates.TemplateResponse("room.htm", context={"request": request, "id": id})   
+        rooms[id]['film'] = ''
+        rooms[id]['time'] = 0
+    return templates.TemplateResponse("room.htm", context={"request": request, "id": id, 'link': '/video/' + rooms[id]['film'], 'time': rooms[id]['time'], 'server': LOCAL})   
 
 @app.get("/room/{id}/{film_id}", response_class=HTMLResponse)
 async def join_room(request: Request,id:str, film_id, url: Union[str, None] = None):
@@ -109,7 +112,7 @@ async def join_room(request: Request,id:str, film_id, url: Union[str, None] = No
         rooms[id]['time'] = 0
     rooms[id]['film'] = film_id
 
-    return templates.TemplateResponse("video_playback.htm", context={"request": request, "link": rooms[id]['film'], "server": SERVER, 'time': rooms[id]['time']})   
+    return templates.TemplateResponse("video_playback.htm", context={"request": request, "link": rooms[id]['film'], "server": LOCAL, 'time': rooms[id]['time']})   
 
 
 @app.get("/films")
@@ -138,6 +141,8 @@ async def control_playback(websocket: WebSocket, id:str):
             data = await websocket.receive_text()
             if 'seek' in data:
                 rooms[id]['time'] = data.split(' ')[1]
+            if 'film' in data:
+                rooms[id]['film'] = data.split(' ')[1]
             await manager.broadcast(websocket, data, id)
     except WebSocketDisconnect:
         manager.disconnect(websocket, id)
