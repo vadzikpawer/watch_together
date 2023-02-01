@@ -1,0 +1,164 @@
+h1,
+h2 {
+    padding-left: 20px;
+    margin-bottom: 0;
+}
+
+html {
+    background: #373737;
+    font-family: 'SF Pro Display';
+    font-style: normal;
+    font-weight: 500;
+    font-size: 14px;
+    /* or 150% */
+    min-height: 100%;
+    /* make sure it is at least as tall as the viewport */
+    letter-spacing: 0.02em;
+    position: relative;
+}
+
+body {
+    height: 100%;
+    /* force the BODY element to match the height of the HTML element */
+}
+
+.film:hover {
+    cursor: pointer;
+}
+
+.grid-container {
+    display: grid;
+    height: 100%;
+    column-gap: 1px;
+    grid-template-columns: 80% 20%;
+    padding: 20px;
+    grid-row-gap: 10px;
+    grid-template-rows: 600px 400px 70px;
+}
+
+
+div.grid-item#list_grid {
+    padding-left: 10px;
+    grid-column: 2;
+    background-color: #252526;
+    border-radius: 20px;
+}
+
+h1,
+h3,
+h2,
+ul {
+    color: #ADFF00;
+
+}
+
+h3 {
+    font-size: 28px;
+    margin-left: 10px;
+    margin-top: 18px;
+    margin-bottom: 5px;
+}
+
+h1 {
+    font-size: 38px;
+}
+
+ul{
+    list-style-type: none;
+    padding-inline-start: 0;
+}
+
+ul#messages {
+    height: 75%;
+    
+    overflow: hidden;
+    overflow-y: scroll;
+    scroll-behavior: auto;
+    margin: 10px;
+}
+
+ul#messages::-webkit-scrollbar {
+    width: 12px;
+    padding-right: 10px;
+    margin-right: 20px;
+}
+
+ul#messages::-webkit-scrollbar-track {
+    background-color:#252526;
+    border-radius: 100px;
+}
+
+ul#messages::-webkit-scrollbar-thumb {
+    background-color:#ADFF00 ;
+    border-radius: 100px;
+}
+
+li {
+    margin-top: 10px;
+    font-size: 18px;
+    padding-right: 10px;
+    border-radius: 10px;
+}
+
+
+.film:hover {
+    cursor: pointer;
+    background-color: #ADFF00;
+    color: #1f1f1f;
+}
+
+.film_elem {
+    padding-left: 10px;
+}
+
+video {
+    border-radius: 15px;
+}
+
+.button {
+    width: fit-content;
+    height: auto;
+    padding: 15px 25px;
+    font-size: 24px;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    outline: none;
+    color: #ADFF00;
+    background-color: #1f1f1f;
+    border: none;
+    border-radius: 15px;
+
+}
+
+.button#login {
+    width: 100%;
+}
+
+.grid-item#back_button {
+    grid-column: 2;
+}
+
+.grid-item#video_grid {
+    grid-row-start: 1;
+    grid-row-end: 3;
+}
+
+.button:hover {
+    background-color: #ADFF00;
+    color: #1f1f1f;
+}
+
+.button:active {
+    background-color: #3e8e41;
+    transform: translateY(4px);
+}
+
+.grid-item#logs {
+    grid-column: 2;
+    grid-row: 2;
+    background-color: #252526;
+    border-radius: 20px;
+    padding-left: 10px;
+    font-weight: 700;
+}

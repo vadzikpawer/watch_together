@@ -1,133 +1,25 @@
 <!DOCTYPE html>
 <html>
-<style>
-    html {
-        background: #373737;
-        font-family: 'SF Pro Display';
-        font-style: normal;
-        font-weight: 500;
-        font-size: 14px;
-        /* or 150% */
-
-        letter-spacing: 0.02em;
-    }
-
-    form label {
-        display: inline-block;
-        width: auto;
-
-        color: #ADFF00;
-        font-size: 24px;
-        margin-right: 10px;
-    }
-
-    form div {
-        margin-bottom: 10px;
-    }
-
-    .main-box {
-        padding: 30px;
-        display: grid;
-        grid-template-columns: 500px 700px;
-    }
-
-    .login {
-        width: fit-content;
-        height: auto;
-        padding: 15px 25px;
-        font-size: 24px;
-        cursor: pointer;
-        text-align: center;
-        text-decoration: none;
-        outline: none;
-        color: #ADFF00;
-        background-color: #1f1f1f;
-        border: none;
-        border-radius: 15px;
-        width: 450px;
-    }
-
-    .login:hover {
-        background-color: #ADFF00;
-        color: #1f1f1f;
-    }
-
-    .login:active {
-        background-color: #3e8e41;
-        transform: translateY(4px);
-    }
-
-    .room:hover {
-        cursor: pointer;
-        background-color: #ADFF00;
-        color: #1f1f1f;
-    }
-
-    ul {
-        color: #ADFF00;
-        font-size: 24px;
-        margin-top: 10px;
-        font-weight: 700;
-        margin-left: 20px;
-        list-style-type: none;
-        padding-inline-start: 0;
-    }
-
-    ul li {
-        background-color: #1f1f1f;
-        border-radius: 10px;
-        margin-top: 20px;
-    }
-
-
-
-    .main-box {
-        width: auto;
-        height: auto;
-    }
-
-    #room_num {
-        color: #ADFF00;
-        background-color: #1f1f1f;
-        width: auto;
-        border-radius: 10px;
-        border: none;
-        font-size: 24px;
-        margin: 10px;
-        padding-left: 10px;
-        padding-top: 5px;
-        padding-bottom: 5px;
-    }
-
-    #room_num:focus {
-        border: none;
-        outline: none;
-    }
-
-    textarea {
-        padding: 5px;
-        margin: 10px;
-    }
-
-    .room_elem {
-        margin-left: 10px;
-    }
-</style>
 
 <head>
     <title>Watch together</title>
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', path='css/index.css') }}">
 </head>
 
 <body>
     <div class="main-box">
         <form name="user_form" method="get">
             <div>
-                <label>Room number</label>
-                <input id="room_num" name="room_num" autocomplete="off">
+                <label>Your name</label>
+                <input class='inp' id="name" name="name" autocomplete="off">
             </div>
             <div>
-                <input id="login" type="submit" value="Enter room" onclick="return enter_room()" class="login">
+                <label>Room number</label>
+                <input class='inp' id="room_num" name="room_num" autocomplete="off">
+            </div>
+            <div>
+                <input id="login" type="submit" value="Enter room" onclick="return enter_room()" class="button">
             </div>
         </form>
 
@@ -138,11 +30,11 @@
 
 <script type="text/javascript">
     function enter_room() {
-        document.user_form.action = 'enter_room/' + document.getElementById('room_num').value;
+        document.user_form.action = 'enter_room/' + document.getElementById('room_num').value + `?name=${document.getElementById('name').value}`;
     }
 
     function enter_room_num(num) {
-        location.href = 'enter_room/' + num.firstChild.textContent;
+        location.href = 'enter_room/' + num.firstChild.textContent + `?name=${document.getElementById('name').value}`;
     };
 
 

@@ -8,6 +8,7 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi import Request, Response
 from fastapi import Header
 from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
 
 CHUNK_SIZE = 1024*1024
 SERVER = '45.156.24.134'
@@ -20,24 +21,38 @@ rooms = {}
 favicon_path = 'favicon.ico'
 
 
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 
 class ConnectionManager:
     def __init__(self):
         self.active_connections: List[WebSocket] = []
 
-    async def connect(self, websocket: WebSocket, room_id: str):
+    async def connect(self, websocket: WebSocket, room_id: str, name= 'test'):
         await websocket.accept()
         self.active_connections.append(websocket)
-        rooms[room_id]['users'].append(websocket)
+        rooms[room_id]['users'].append({'ws': websocket})
 
-    def disconnect(self, websocket: WebSocket, room_id: str):
+    def add_name(self, websocket, room_id, name):
+        for user in rooms[room_id]['users']:
+            if user['ws'] == websocket:
+                user['name'] = name
+        print(rooms)
+
+    async def disconnect(self, websocket: WebSocket, room_id: str):
         self.active_connections.remove(websocket)
-        rooms[room_id]['users'].remove(websocket)
+        for user in rooms[room_id]['users']:
+            if user['ws'] == websocket:
+                name = user['name']
+                rooms[room_id]['users'].remove(user)
+        for user in rooms[room_id]['users']:   
+            await user['ws'].send_text(f'{name} disconnected')
+        print(rooms)
 
     async def broadcast(self, websocket, message: str, room_id: str):
         for connection in rooms[room_id]['users']:
-            if connection != websocket:
-                await connection.send_text(message)
+            if connection['ws'] != websocket:
+                await connection['ws'].send_text(message)
 
 
 manager = ConnectionManager()
@@ -50,6 +65,10 @@ async def read_root(request: Request):
 @app.get('/favicon.ico', include_in_schema=False)
 async def favicon():
     return FileResponse(favicon_path)
+
+@app.get('/css/{id}', include_in_schema=False)
+async def favicon():
+    return FileResponse(f'templates/css/{id}')
 
 
 @app.get("/video/{id}")
@@ -76,26 +95,26 @@ async def video_endpoint(id, range: str = Header(None)):
 
 
 @app.get("/enter_room/{id}")
-async def enter_room(id:str):
+async def enter_room(id:str, name=''):
     if id not in rooms.keys():
         rooms[id] = {}
         rooms[id]['users'] = []
         rooms[id]['state'] = 'pause'
         rooms[id]['film'] = ''
         rooms[id]['time'] = 0
-    response = RedirectResponse(url=f'/room/{id}')
+    response = RedirectResponse(url=f'/room/{id}?name={name}')
     return response
 
 
 @app.get("/room/{id}", response_class=HTMLResponse)
-async def join_room(request: Request,id:str):
+async def join_room(request: Request,id:str, name="test"):
     if id not in rooms.keys():
         rooms[id] = {}
         rooms[id]['users'] = []
         rooms[id]['state'] = 'pause'
         rooms[id]['film'] = ''
         rooms[id]['time'] = '0'
-    return templates.TemplateResponse("room.htm", context={"request": request, "id": id, 'link': '/video/' + rooms[id]['film'], 'time': rooms[id]['time'], 'server': SERVER})   
+    return templates.TemplateResponse("room.htm", context={"request": request, "id": id, 'link': '/video/' + rooms[id]['film'], 'time': rooms[id]['time'], 'server': LOCAL, 'name': name})   
 
 @app.get("/films")
 async def get_all_films():
@@ -127,7 +146,9 @@ async def control_playback(websocket: WebSocket, id:str):
             if 'film' in data:
                 rooms[id]['film'] = data.split(' ')[1]
                 rooms[id]['time'] = '0'
+            if 'connected' in data:
+                manager.add_name(websocket, id, data.split(' ')[0])
             await manager.broadcast(websocket, data, id)
     except WebSocketDisconnect:
-        manager.disconnect(websocket, id)
+        await manager.disconnect(websocket, id)
         
