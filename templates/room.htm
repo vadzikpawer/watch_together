@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html>
 <style>
+    h1 {
+        padding-left: 20px;
+    }
+
     html {
         background: #373737;
         font-family: 'SF Pro Display';
@@ -21,6 +25,7 @@
         display: grid;
         column-gap: 1px;
         grid-template-columns: 80% 20%;
+        padding: 30px;
     }
 
     div.grid-item#list_grid {
@@ -35,6 +40,11 @@
     h3,
     ul {
         color: #ADFF00;
+    }
+
+    h3 {
+        font-size: 28px;
+        margin-left: 10px;
     }
 
     h1 {
@@ -53,7 +63,8 @@
     *::-webkit-media-controls-panel {
         color: #ADFF00;
     }
-    *::-webkit-media-controls-play-button{
+
+    *::-webkit-media-controls-play-button {
         color: #ADFF00;
     }
 </style>
@@ -68,7 +79,7 @@
 
     <div class="grid-container">
         <div class="grid-item" id="video_grid">
-            <video id='video' type="video/mp4" controls class="video_box" src="{{link}}" >
+            <video id='video' type="video/mp4" controls class="video_box" src="{{link}}">
             </video>
         </div>
         <div class="grid-item" id="list_grid">
@@ -91,8 +102,8 @@
         needSeek = false;
     }, false);
 
-    if ('{{link}}' == '/video/'){
-    video.style.display = "none";
+    if ('{{link}}' == '/video/') {
+        video.style.display = "none";
     }
     video.addEventListener('playing',
         (event) => {
