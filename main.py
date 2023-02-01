@@ -114,7 +114,7 @@ async def join_room(request: Request,id:str, name="test"):
         rooms[id]['state'] = 'pause'
         rooms[id]['film'] = ''
         rooms[id]['time'] = '0'
-    return templates.TemplateResponse("room.htm", context={"request": request, "id": id, 'link': '/video/' + rooms[id]['film'], 'time': rooms[id]['time'], 'server': LOCAL, 'name': name})   
+    return templates.TemplateResponse("room.htm", context={"request": request, "id": id, 'link': '/video/' + rooms[id]['film'], 'time': rooms[id]['time'], 'server': SERVER, 'name': name})   
 
 @app.get("/films")
 async def get_all_films():
