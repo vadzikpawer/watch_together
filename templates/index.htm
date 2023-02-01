@@ -1,13 +1,34 @@
 <!DOCTYPE html>
 <html>
 <style>
+    html {
+        background: #373737;
+        font-family: 'SF Pro Display';
+        font-style: normal;
+        font-weight: 500;
+        font-size: 14px;
+        /* or 150% */
+
+        letter-spacing: 0.02em;
+    }
+
     form label {
         display: inline-block;
-        width: 100px;
+        width: auto;
+
+        color: #ADFF00;
+        font-size: 24px;
+        margin-right: 10px;
     }
 
     form div {
         margin-bottom: 10px;
+    }
+
+    .main-box{
+        padding: 30px;
+        display: grid;
+        grid-template-columns: 500px 700px;
     }
 
     .login {
@@ -19,26 +40,76 @@
         text-align: center;
         text-decoration: none;
         outline: none;
-        color: #fff;
-        background-color: #4CAF50;
+        color: #ADFF00;
+        background-color: #1f1f1f;
         border: none;
         border-radius: 15px;
-        box-shadow: 0 9px #999;
     }
 
     .login:hover {
-        background-color: #3e8e41
+        background-color: #ADFF00;
+        color: #1f1f1f;
     }
 
     .login:active {
         background-color: #3e8e41;
-        box-shadow: 0 5px #666;
         transform: translateY(4px);
     }
 
     .room:hover {
         cursor: pointer;
+        background-color: #ADFF00;
+        color: #1f1f1f;
     }
+
+    ul {
+        color: #ADFF00;
+        font-size: 24px;
+        margin-top: 10px;
+        font-weight: 700;
+        margin-left: 20px;
+    }
+    ul li{
+        background-color: #1f1f1f;
+        border-radius: 10px;
+        margin-top: 20px;
+    }
+
+
+
+    .main-box {
+        width: auto;
+        height: auto;
+    }
+
+    #room_num {
+        color: #ADFF00;
+        background-color: #1f1f1f;
+        width: auto;
+        border-radius: 10px;
+        border: none;
+        font-size: 24px;
+        margin: 10px;
+        padding-left: 10px;
+        padding-top: 5px;
+        padding-bottom: 5px;
+    }
+
+    #room_num:focus {
+        border: none;
+        outline: none;
+    }
+
+    textarea {
+        padding: 5px;
+        margin: 10px;
+    }
+
+    .room_elem{
+        margin-left: 10px;
+    }
+
+    
 </style>
 
 <head>
@@ -47,18 +118,19 @@
 </head>
 
 <body>
-    <form name="user_form" method="get">
-        <div>
-            <label>Room number</label>
-            <input id="room_num" name="room_num">
-        </div>
-        <div>
-            <input id="login" type="submit" value="Enter room" onclick="return enter_room()" class="login">
-        </div>
-    </form>
+    <div class="main-box">
+        <form name="user_form" method="get">
+            <div>
+                <label>Room number</label>
+                <input id="room_num" name="room_num" autocomplete="off">
+            </div>
+            <div>
+                <input id="login" type="submit" value="Enter room" onclick="return enter_room()" class="login">
+            </div>
+        </form>
 
-    <ul id="rooms_list"></ul>
-
+        <ul id="rooms_list">Rooms: </ul>
+    </div>
 </body>
 
 
@@ -82,9 +154,9 @@
                 const listItem = document.createElement('li');
                 listItem.setAttribute('onclick', 'enter_room_num(this)')
                 listItem.setAttribute('class', 'room')
-                listItem.appendChild(
-                    document.createElement('strong')
-                ).textContent = film;
+                child = document.createElement('text')
+                child.setAttribute('class', 'room_elem')
+                listItem.appendChild(child).textContent = film;
                 myList.appendChild(listItem);
             }
         })

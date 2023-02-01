@@ -1,24 +1,65 @@
 <!DOCTYPE html>
 <html>
 <style>
+    html {
+        background: #373737;
+        font-family: 'SF Pro Display';
+        font-style: normal;
+        font-weight: 500;
+        font-size: 14px;
+        /* or 150% */
+
+        letter-spacing: 0.02em;
+
+    }
+
     .film:hover {
         cursor: pointer;
     }
 
     .grid-container {
-  display: grid;
-  column-gap: 50px;
-  grid-template-columns: 1fr 1fr;
-}
+        display: grid;
+        column-gap: 1px;
+        grid-template-columns: 80% 20%;
+    }
 
-.grid-item list-grid{
-    grid-column: 2;
-}
+    div.grid-item#list_grid {
+        padding-left: 10px;
+        grid-column: 2;
+        background-color: #252526;
+        border-radius: 20px;
+        height: 1080px;
+    }
 
+    h1,
+    h3,
+    ul {
+        color: #ADFF00;
+    }
+
+    h1 {
+        font-size: 38px;
+    }
+
+    li {
+        margin-top: 10px;
+        font-size: 18px;
+    }
+
+    video {
+        border-radius: 15px;
+    }
+
+    *::-webkit-media-controls-panel {
+        color: #ADFF00;
+    }
+    *::-webkit-media-controls-play-button{
+        color: #ADFF00;
+    }
 </style>
 
 <head>
-    <title>FastAPI video streaming</title>
+    <title>Watch together</title>
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
 </head>
 
@@ -27,7 +68,7 @@
 
     <div class="grid-container">
         <div class="grid-item" id="video_grid">
-            <video id='video' type="video/mp4" controls class="video_box" src="{{link}}">
+            <video id='video' type="video/mp4" controls class="video_box" src="{{link}}" >
             </video>
         </div>
         <div class="grid-item" id="list_grid">
@@ -37,16 +78,6 @@
 
     </div>
 
-
-    <form name="user_form" method="get">
-        <div>
-            <label>Paste a link</label>
-            <input id="url" name="url">
-        </div>
-        <div>
-            <input id="login" type="submit" value="Enter room" onclick="return film_link()" class="login">
-        </div>
-    </form>
 
 </body>
 
@@ -60,6 +91,9 @@
         needSeek = false;
     }, false);
 
+    if ('{{link}}' == '/video/'){
+    video.style.display = "none";
+    }
     video.addEventListener('playing',
         (event) => {
             console.log()
@@ -130,9 +164,9 @@
                 const listItem = document.createElement('li');
                 listItem.setAttribute('onclick', 'Alert(this.firstChild.textContent)')
                 listItem.setAttribute('class', 'film')
-                listItem.appendChild(
-                    document.createElement('strong')
-                ).textContent = film;
+                child = document.createElement('strong');
+                child.setAttribute('class', 'film_elem')
+                listItem.appendChild(child).textContent = film;
                 myList.appendChild(listItem);
             }
         })
@@ -142,6 +176,7 @@
 
     function Alert(film) {
         video.setAttribute('src', '/video/' + film);
+        video.style.display = "block";
         sendMessage(event, 'film: ' + film)
     }
 
