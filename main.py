@@ -101,6 +101,7 @@ async def join_room(request: Request,id:str):
 async def get_all_films():
     films_list = {}
     films_list['films'] = [f for f in listdir('temp') if isfile(join('temp', f))]
+    films_list['films'].sort()
     return JSONResponse(content=films_list)
 
 @app.get("/rooms")
