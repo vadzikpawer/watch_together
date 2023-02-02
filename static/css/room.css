@@ -70,7 +70,6 @@ ul{
 
 ul#messages {
     height: 75%;
-    
     overflow: hidden;
     overflow-y: scroll;
     scroll-behavior: auto;
@@ -94,6 +93,7 @@ ul#messages::-webkit-scrollbar-thumb {
 }
 
 li {
+    margin-right: 10px;
     margin-top: 10px;
     font-size: 18px;
     padding-right: 10px;

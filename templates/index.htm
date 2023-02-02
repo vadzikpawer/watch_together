@@ -23,7 +23,9 @@
             </div>
         </form>
 
-        <ul id="rooms_list">Rooms: </ul>
+        <ul id="rooms_list">
+            Rooms: 
+        </ul>
     </div>
 </body>
 
@@ -44,13 +46,18 @@
     fetch(myRequest)
         .then((response) => response.json())
         .then((data) => {
-            for (const film of data.rooms) {
+            for (const room of data.rooms) {
                 const listItem = document.createElement('li');
                 listItem.setAttribute('onclick', 'enter_room_num(this)')
                 listItem.setAttribute('class', 'room')
-                child = document.createElement('text')
-                child.setAttribute('class', 'room_elem')
-                listItem.appendChild(child).textContent = film;
+                room_name = document.createElement('div')
+                room_name.setAttribute('class', 'room-name')
+                room_name.textContent = room.name
+                room_users = document.createElement('div')
+                room_users.setAttribute('class', 'room-users')
+                room_users.textContent = `${room.users}/20`
+                listItem.appendChild(room_name);
+                listItem.appendChild(room_users)
                 myList.appendChild(listItem);
             }
         })

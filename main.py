@@ -1,3 +1,4 @@
+import configparser
 from os import listdir
 from os.path import isfile, join
 from typing import List, Union
@@ -10,9 +11,14 @@ from fastapi import Header
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 
+
+config = configparser.ConfigParser()
+config.sections()
+config.read('cfg/server.cfg')
+config.sections()
+
 CHUNK_SIZE = 1024*1024
-SERVER = '45.156.24.134'
-LOCAL = 'localhost'
+SERVER = config['DEFAULT']['url']
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
@@ -126,7 +132,7 @@ async def get_all_films():
 @app.get("/rooms")
 async def get_all_rooms():
     rooms_list = {}
-    rooms_list['rooms'] = [x for x in rooms.keys()]
+    rooms_list['rooms'] = [{'name': x, 'users': len(rooms[x]['users'])} for x in rooms.keys()]
     return JSONResponse(content=rooms_list)
 
 @app.get('/removerooms')

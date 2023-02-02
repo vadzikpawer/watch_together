@@ -75,12 +75,24 @@ ul {
     padding-inline-start: 0;
 }
 
-ul li {
+li {
+    height: 40px;
     background-color: #1f1f1f;
     border-radius: 10px;
     margin-top: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
+.room-users{
+    align-self: right;
+    padding-right: 10px;
+}
+
+.room-name{
+    padding-left: 10px;
+}
 
 
 .main-box {
