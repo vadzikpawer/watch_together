@@ -1,6 +1,6 @@
 html {
     background: #373737;
-    font-family: 'SF Pro Display';
+    font-family: 'Roboto', sans-serif;
     font-style: normal;
     font-weight: 500;
     font-size: 14px;
@@ -12,7 +12,6 @@ html {
 form label {
     display: inline-block;
     width: auto;
-
     color: #ADFF00;
     font-size: 24px;
     margin-right: 10px;

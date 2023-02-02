@@ -35,9 +35,10 @@ class ConnectionManager:
         self.active_connections: List[WebSocket] = []
 
     async def connect(self, websocket: WebSocket, room_id: str, name= 'test'):
-        await websocket.accept()
-        self.active_connections.append(websocket)
-        rooms[room_id]['users'].append({'ws': websocket})
+        if len(rooms[id]['users']) < 20:
+            await websocket.accept()
+            self.active_connections.append(websocket)
+            rooms[room_id]['users'].append({'ws': websocket})
 
     def add_name(self, websocket, room_id, name):
         for user in rooms[room_id]['users']:
