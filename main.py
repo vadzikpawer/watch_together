@@ -1,6 +1,7 @@
 import configparser
 from os import listdir
 from os.path import isfile, join
+import random
 from typing import List, Union
 
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse, FileResponse
@@ -35,10 +36,9 @@ class ConnectionManager:
         self.active_connections: List[WebSocket] = []
 
     async def connect(self, websocket: WebSocket, room_id: str, name= 'test'):
-        if len(rooms[room_id]['users']) < 20:
-            await websocket.accept()
-            self.active_connections.append(websocket)
-            rooms[room_id]['users'].append({'ws': websocket})
+        await websocket.accept()
+        self.active_connections.append(websocket)
+        rooms[room_id]['users'].append({'ws': websocket})
 
     def add_name(self, websocket, room_id, name):
         for user in rooms[room_id]['users']:
@@ -109,6 +109,9 @@ async def enter_room(id:str, name=''):
         rooms[id]['state'] = 'pause'
         rooms[id]['film'] = ''
         rooms[id]['time'] = 0
+    if name == '':
+        name = 'guest_' + str(random.randint(0,100))
+    
     response = RedirectResponse(url=f'/room/{id}?name={name}')
     return response
 
@@ -121,6 +124,9 @@ async def join_room(request: Request,id:str, name="test"):
         rooms[id]['state'] = 'pause'
         rooms[id]['film'] = ''
         rooms[id]['time'] = '0'
+    if name == '':
+        name = 'guest_' + str(random.randint(0,1000))
+    
     return templates.TemplateResponse("room.htm", context={"request": request, "id": id, 'link': '/video/' + rooms[id]['film'], 'time': rooms[id]['time'], 'server': SERVER, 'name': name})   
 
 @app.get("/films")
