@@ -41,13 +41,14 @@ def startup_event():
 
 
 @app.on_event("shutdown")
-def startup_event():
+def shutdown_event():
     for room in rooms:
-        room['users'].clear()
+        print(room)
+        rooms[room]['users'] = []
     print(rooms)
     with open('cfg/rooms.cfg', 'w') as file:
         # Serializing json
-        json.dumps(rooms, file)
+        json.dump(rooms, file)
 
 
 class ConnectionManager:
@@ -163,8 +164,7 @@ async def get_all_films():
 @app.get("/rooms")
 async def get_all_rooms():
     rooms_list = {}
-    rooms_list['rooms'] = [{'name': x, 'users': len(
-        rooms[x]['users'])} for x in rooms.keys()]
+    rooms_list['rooms'] = [{'name': x, 'users': len(rooms[x]['users'])} for x in rooms.keys()]
     return JSONResponse(content=rooms_list)
 
 
