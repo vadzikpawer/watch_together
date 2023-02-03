@@ -1,4 +1,5 @@
 import configparser
+import json
 from os import listdir
 from os.path import isfile, join
 import random
@@ -31,11 +32,29 @@ favicon_path = 'favicon.ico'
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
+@app.on_event("startup")
+def startup_event():
+    global rooms
+    with open('cfg/rooms.cfg', 'r') as file:
+        rooms = json.load(file)
+    print(rooms)
+
+
+@app.on_event("shutdown")
+def startup_event():
+    for room in rooms:
+        room['users'].clear()
+    print(rooms)
+    with open('cfg/rooms.cfg', 'w') as file:
+        # Serializing json
+        json.dumps(rooms, file)
+
+
 class ConnectionManager:
     def __init__(self):
         self.active_connections: List[WebSocket] = []
 
-    async def connect(self, websocket: WebSocket, room_id: str, name= 'test'):
+    async def connect(self, websocket: WebSocket, room_id: str, name='test'):
         await websocket.accept()
         self.active_connections.append(websocket)
         rooms[room_id]['users'].append({'ws': websocket})
@@ -52,7 +71,7 @@ class ConnectionManager:
             if user['ws'] == websocket:
                 name = user['name']
                 rooms[room_id]['users'].remove(user)
-        for user in rooms[room_id]['users']:   
+        for user in rooms[room_id]['users']:
             await user['ws'].send_text(f'{name} disconnected')
         print(rooms)
 
@@ -69,9 +88,11 @@ manager = ConnectionManager()
 async def read_root(request: Request):
     return templates.TemplateResponse("index.htm", context={"request": request})
 
+
 @app.get('/favicon.ico', include_in_schema=False)
 async def favicon():
     return FileResponse(favicon_path)
+
 
 @app.get('/css/{id}', include_in_schema=False)
 async def favicon():
@@ -102,7 +123,7 @@ async def video_endpoint(id, range: str = Header(None)):
 
 
 @app.get("/enter_room/{id}")
-async def enter_room(id:str, name=''):
+async def enter_room(id: str, name=''):
     if id not in rooms.keys():
         rooms[id] = {}
         rooms[id]['users'] = []
@@ -110,14 +131,14 @@ async def enter_room(id:str, name=''):
         rooms[id]['film'] = ''
         rooms[id]['time'] = 0
     if name == '':
-        name = 'guest_' + str(random.randint(0,100))
-    
+        name = 'guest_' + str(random.randint(0, 100))
+
     response = RedirectResponse(url=f'/room/{id}?name={name}')
     return response
 
 
 @app.get("/room/{id}", response_class=HTMLResponse)
-async def join_room(request: Request,id:str, name="test"):
+async def join_room(request: Request, id: str, name="test"):
     if id not in rooms.keys():
         rooms[id] = {}
         rooms[id]['users'] = []
@@ -125,31 +146,37 @@ async def join_room(request: Request,id:str, name="test"):
         rooms[id]['film'] = ''
         rooms[id]['time'] = '0'
     if name == '':
-        name = 'guest_' + str(random.randint(0,1000))
-    
-    return templates.TemplateResponse("room.htm", context={"request": request, "id": id, 'link': '/video/' + rooms[id]['film'], 'time': rooms[id]['time'], 'server': SERVER, 'name': name})   
+        name = 'guest_' + str(random.randint(0, 1000))
+
+    return templates.TemplateResponse("room.htm", context={"request": request, "id": id, 'link': '/video/' + rooms[id]['film'], 'time': rooms[id]['time'], 'server': SERVER, 'name': name})
+
 
 @app.get("/films")
 async def get_all_films():
     films_list = {}
-    films_list['films'] = [f for f in listdir('temp') if isfile(join('temp', f))]
+    films_list['films'] = [f for f in listdir(
+        'temp') if isfile(join('temp', f))]
     films_list['films'].sort()
     return JSONResponse(content=films_list)
+
 
 @app.get("/rooms")
 async def get_all_rooms():
     rooms_list = {}
-    rooms_list['rooms'] = [{'name': x, 'users': len(rooms[x]['users'])} for x in rooms.keys()]
+    rooms_list['rooms'] = [{'name': x, 'users': len(
+        rooms[x]['users'])} for x in rooms.keys()]
     return JSONResponse(content=rooms_list)
+
 
 @app.get('/removerooms')
 async def remove_rooms():
     rooms.clear()
     response = RedirectResponse(url=f'/')
-    return response                                                   
+    return response
+
 
 @app.websocket("/room/{id}/controls")
-async def control_playback(websocket: WebSocket, id:str):
+async def control_playback(websocket: WebSocket, id: str):
     await manager.connect(websocket, id)
     try:
         while True:
@@ -164,4 +191,3 @@ async def control_playback(websocket: WebSocket, id:str):
             await manager.broadcast(websocket, data, id)
     except WebSocketDisconnect:
         await manager.disconnect(websocket, id)
-        
